@@ -7,14 +7,15 @@ export const UserContext = createContext<
 type UserContextValue = {
   email: string;
   password: string;
+  role: "admin" | "client" | "";
 };
 
 function useUserContextValue() {
-  const [userState, setUserState] =
-    useState<UserContextValue>({
-      email: "",
-      password: "",
-    });
+  const [userState, setUserState] = useState<UserContextValue>({
+    email: "",
+    password: "",
+    role: "",
+  });
 
   return [userState, setUserState] as const;
 }
@@ -24,11 +25,11 @@ export const UserContextProvider: any = ({
 }: {
   children: ReactNode;
 }) => {
-  const userGlobalContext = useUserContextValue();
+  const userContext = useUserContextValue();
   return (
-      <UserContext.Provider value={userGlobalContext}>
-        {children}
-      </UserContext.Provider>
+    <UserContext.Provider value={userContext}>
+      {children}
+    </UserContext.Provider>
   );
 };
 
