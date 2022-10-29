@@ -1,18 +1,22 @@
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
-import HomeIcon from '@mui/icons-material/Home';
+import LocalCarWashIcon from '@mui/icons-material/LocalCarWash';
 import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import Tab from '@mui/material/Tab';
-import TabContext from '@mui/lab/TabContext';
-import Tabs from '@mui/material/Tabs';
+import { useNavigate } from 'react-router-dom';
 
 export default function AppointmentPage() {
+  const navigate = useNavigate();
+  const handleHomePage = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault()
+    navigate("/home-page");
+  };
+
   const [value, setValue] = React.useState('1');
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -24,8 +28,8 @@ export default function AppointmentPage() {
       <CssBaseline />
       <AppBar position="relative" >
         <Toolbar>
-          <Button variant="contained" href="/home-page">
-          <HomeIcon href="/home-page"/>
+          <Button variant="contained" onClick={(e) => handleHomePage(e)}>
+          <LocalCarWashIcon />
           </Button>
           <Typography variant="h5" color="inherit" sx={{ml: 4}} noWrap>
             Car Wash Appointment Booking App

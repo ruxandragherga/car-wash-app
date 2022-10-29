@@ -1,30 +1,39 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
+import axios from "axios";
 
 export default function SignUp() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit (event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-      firstName: data.get("firstName"),
-      lastName: data.get("lastName"),
-      phoneNumber: data.get("phoneNumber"),
-    });
+    const formData = new FormData(event.currentTarget);
+
+    const res = await axios.get("http://localhost:3002/api/get");
+    const {data} = await res;
+    const totalNumberOfUsers = data.length;
+
+    const newUser = {
+      userId: totalNumberOfUsers,
+      userFirstName: formData.get("firstName"),
+      userLastName: formData.get("lastName"),
+      userEmail: formData.get("email"),
+      userPassword: formData.get("password"),
+      userPhoneNumber: formData.get("phoneNumber"),
+      userRole: "client",
+    }
+
+    const postResponseData = await axios.post(
+      "http://localhost:3002/api/create",
+      newUser
+    );
+    const response = await postResponseData.data;
+    
   };
 
   return (

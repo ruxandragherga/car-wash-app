@@ -1,7 +1,7 @@
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
-import HomeIcon from '@mui/icons-material/Home';
+import LocalCarWashIcon from '@mui/icons-material/LocalCarWash';
 import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -9,7 +9,6 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { styled } from '@mui/material/styles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -18,8 +17,61 @@ import TabContext from '@mui/lab/TabContext';
 import TabPanel from '@mui/lab/TabPanel';
 import Tabs from '@mui/material/Tabs';
 import Divider from '@mui/material/Divider';
+import { Service } from "../models/Service";
+import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function HomePageClient() {
+  const [washingServices, setWashingServices] = useState<Service[]>([]);
+  const [polishServices, setPolishServices] = useState<Service[]>([]);
+
+  React.useEffect(() => {
+    async function getWashingServiceItems() {
+      try {
+        const res = await axios.get("http://localhost:3003/api/get");
+        const { data } = await res;
+        const allServices: Service[] = data;
+
+        setWashingServices(
+          allServices.filter(
+            (service) => service.service_category === "spalare"
+          )
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    getWashingServiceItems();
+    async function getPolishServiceItems() {
+      try {
+        const res = await axios.get("http://localhost:3003/api/get");
+        const { data } = await res;
+        const allServices: Service[] = data;
+
+        setPolishServices(
+          allServices.filter((service) => service.service_category === "polish")
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    getPolishServiceItems();
+  }, []);
+  const navigate = useNavigate();
+  const handleHomePage = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault()
+    navigate("/home-page");
+  };
+  const handleAppointment = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault()
+    navigate("/appointment");
+  };
+  const handleMyAppointments = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault()
+    navigate("/my-appointments");
+  };
+
   const [value, setValue] = React.useState('1');
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -31,8 +83,8 @@ export default function HomePageClient() {
       <CssBaseline />
       <AppBar position="relative" >
         <Toolbar>
-          <Button variant="contained" href="/home-page">
-          <HomeIcon />
+          <Button variant="contained" onClick={(e) => handleHomePage(e)}>
+          <LocalCarWashIcon />
           </Button>
           <Typography variant="h5" color="inherit" sx={{ml: 4}} noWrap>
             Car Wash Appointment Booking App
@@ -71,126 +123,110 @@ export default function HomePageClient() {
               spacing={2}
               justifyContent="center"
             >
-              <Button variant="contained" href="/appointment">Programare online</Button>
-              <Button variant="outlined"href="/my-appointments">Programarile mele</Button>
+              <Button variant="contained" onClick={(e) => handleAppointment(e)}>Programare online</Button>
+              <Button variant="outlined" onClick={(e) => handleMyAppointments(e)}>Programarile mele</Button>
             </Stack>
           </Container>
         </Box>
         <Grid container spacing={2} px={40}>
-        <Grid item xs={12} md={6} >
-          <Typography sx={{ mt: 4, mb: 2 }} variant="h6" component="div" fontWeight={600}>
+        <Grid item xs={6} md={6} >
+          <Typography sx={{ mt: 4, mb: 3 }} variant="h6" component="div" fontWeight={600}>
             Servicii spalatorie auto
           </Typography>
             <List >
+            {washingServices.map((service: any) => (
                 <ListItem>
-                  <ListItemText
-                    primary="Spalat auto exterior"
-                  />
+                <ListItemText
+                  primary={service.service_name}
+                />
                 </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Curatat auto interior"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Dezinfectie auto interior"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Spalat tapiterie"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Curatat jante"
-                  />
-                </ListItem>,
+            ))}
             </List>
         </Grid>
         <TabContext value={value}>
-          <Box sx={{my: 5, height: 300 }}>
+          <Box sx={{my: 4 }}>
         <Tabs value={value} onChange={handleChange} >
         <Tab value="1" label="Small" />
         <Tab value="2" label="Medium" />
         <Tab value="3" label="Large" />
       </Tabs>
-        <TabPanel sx={{height:10}} value="1">60 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">120 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">40 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">800 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">40 </TabPanel>
-
-        <TabPanel sx={{height:10}} value="2">70 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">140 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">40 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">850 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">60 </TabPanel>
-
-        <TabPanel sx={{height:10}} value="3">80 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">160 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">40 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">900 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">80 </TabPanel>
+        <TabPanel value="1" ><List >
+            {washingServices.map((service: any) => (
+                <ListItem>
+                <ListItemText
+                  primary={service.service_price_1}
+                />
+                </ListItem>
+            ))}
+            </List> </TabPanel>
+            <TabPanel value="2" ><List >
+            {washingServices.map((service: any) => (
+                <ListItem>
+                <ListItemText
+                  primary={service.service_price_2}
+                />
+                </ListItem>
+            ))}
+            </List> </TabPanel>
+            <TabPanel value="3" ><List >
+            {washingServices.map((service: any) => (
+                <ListItem>
+                <ListItemText
+                  primary={service.service_price_3}
+                />
+                </ListItem>
+            ))}
+            </List> </TabPanel>
         </Box>
       </TabContext>
-        <Grid item xs={12} md={6}>
-        <Typography sx={{ mt: 4, mb: 2 }} variant="h6" component="div" fontWeight={600}>
+        <Grid item xs={6} md={6}>
+        <Typography sx={{ mt: 4, mb: 3 }} variant="h6" component="div" fontWeight={600}>
             Servicii de polish
           </Typography>
-            <List >
+          <List >
+            {polishServices.map((service: any) => (
                 <ListItem>
-                  <ListItemText
-                    primary="Polish auto exterior"
-                  />
+                <ListItemText
+                  primary={service.service_name}
+                />
                 </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Polish faruri"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Detailing motor"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Igenizare instalatie A/C"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Curatare parbrize"
-                  />
-                </ListItem>,
+            ))}
             </List>
         </Grid>
         <TabContext value={value}>
-          <Box sx={{my: 5, height: 300 }}>
+          <Box sx={{my: 4 }}>
         <Tabs value={value} onChange={handleChange} >
         <Tab value="1" label="Small" />
         <Tab value="2" label="Medium" />
         <Tab value="3" label="Large" />
       </Tabs>
-        <TabPanel sx={{height:10}} value="1">700 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">50 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">200 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">100 </TabPanel>
-        <TabPanel sx={{height:10}} value="1">80 </TabPanel>
-
-        <TabPanel sx={{height:10}} value="2">800 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">50 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">250 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">100 </TabPanel>
-        <TabPanel sx={{height:10}} value="2">100 </TabPanel>
-
-        <TabPanel sx={{height:10}} value="3">900 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">50 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">300 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">100 </TabPanel>
-        <TabPanel sx={{height:10}} value="3">120 </TabPanel>
+        <TabPanel value="1" ><List >
+            {polishServices.map((service: any) => (
+                <ListItem>
+                <ListItemText
+                  primary={service.service_price_1}
+                />
+                </ListItem>
+            ))}
+            </List> </TabPanel>
+            <TabPanel value="2" ><List >
+            {polishServices.map((service: any) => (
+                <ListItem>
+                <ListItemText
+                  primary={service.service_price_2}
+                />
+                </ListItem>
+            ))}
+            </List> </TabPanel>
+            <TabPanel value="3" ><List >
+            {polishServices.map((service: any) => (
+                <ListItem>
+                <ListItemText
+                  primary={service.service_price_3}
+                />
+                </ListItem>
+            ))}
+            </List> </TabPanel>
         </Box>
       </TabContext>
       </Grid>

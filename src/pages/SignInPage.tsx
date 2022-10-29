@@ -6,17 +6,41 @@ import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
+import { useLogin } from "../hooks/login_hooks";
+import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../contexts/UserContext";
 
 export default function SignInPage() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const { doLogin } = useLogin();
+  const navigate = useNavigate();
+  const [userState, setUserState] = useUserContext();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    doLogin({
+      email: data.get("email")?.toString() ?? "",
+      password: data.get("password")?.toString() ?? "",
+    })
+      .then((loginResult) => {
+        if (loginResult !== undefined) {
+          setUserState({
+            id: loginResult.user_id,
+            email: loginResult.user_email,
+            password: loginResult.user_password,
+            role: loginResult.user_role,
+            firstName: loginResult.user_first_name,
+            lastName: loginResult.user_last_name,
+            phoneNumber: loginResult.user_phone_number,
+          });
+          if (loginResult.user_role === "client") {
+            navigate("/home-page");
+          } else if (loginResult.user_role === "admin") {
+            navigate("/admin/home-page");
+          }
+        }
+      })
+      .catch((err) => console.log(err));
   };
 
   return (
@@ -79,7 +103,6 @@ export default function SignInPage() {
                 autoComplete="current-password"
               />
               <Button
-                href="/home-page"
                 type="submit"
                 fullWidth
                 variant="contained"
