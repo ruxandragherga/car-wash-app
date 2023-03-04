@@ -21,8 +21,11 @@ import { Service } from "../models/Service";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useUserContext } from '../contexts/UserContext';
 
 export default function HomePageClient() {
+  const [userState, setUserState] = useUserContext();
+  console.log(userState);
   const [washingServices, setWashingServices] = useState<Service[]>([]);
   const [polishServices, setPolishServices] = useState<Service[]>([]);
 
@@ -114,9 +117,6 @@ export default function HomePageClient() {
             >
               Programeaza-te Online!
             </Typography>
-            <Typography variant="h5" align="center" color="text.secondary" paragraph>
-              Something short and leading about the collection below—its contents,
-            </Typography>
             <Stack
               sx={{ pt: 4 }}
               direction="row"
@@ -128,14 +128,14 @@ export default function HomePageClient() {
             </Stack>
           </Container>
         </Box>
-        <Grid container spacing={2} px={40}>
-        <Grid item xs={6} md={6} >
+        <Grid container spacing={2} sx={{mt:4, px: 30}}>
+        <Grid item xs={6} >
           <Typography sx={{ mt: 4, mb: 3 }} variant="h6" component="div" fontWeight={600}>
             Servicii spalatorie auto
           </Typography>
             <List >
             {washingServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id}>
                 <ListItemText
                   primary={service.service_name}
                 />
@@ -146,13 +146,13 @@ export default function HomePageClient() {
         <TabContext value={value}>
           <Box sx={{my: 4 }}>
         <Tabs value={value} onChange={handleChange} >
-        <Tab value="1" label="Small" />
-        <Tab value="2" label="Medium" />
-        <Tab value="3" label="Large" />
+        <Tab value="1" label="Autoturisme" />
+        <Tab value="2" label="Clasa Lux" />
+        <Tab value="3" label="Clasa SUV" />
       </Tabs>
         <TabPanel value="1" ><List >
             {washingServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id + service.service_price_1}>
                 <ListItemText
                   primary={service.service_price_1}
                 />
@@ -161,7 +161,7 @@ export default function HomePageClient() {
             </List> </TabPanel>
             <TabPanel value="2" ><List >
             {washingServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id + service.service_price_2 * 2}>
                 <ListItemText
                   primary={service.service_price_2}
                 />
@@ -170,7 +170,7 @@ export default function HomePageClient() {
             </List> </TabPanel>
             <TabPanel value="3" ><List >
             {washingServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id + service.service_price_3 * 3}>
                 <ListItemText
                   primary={service.service_price_3}
                 />
@@ -179,13 +179,13 @@ export default function HomePageClient() {
             </List> </TabPanel>
         </Box>
       </TabContext>
-        <Grid item xs={6} md={6}>
+        <Grid item xs={6}>
         <Typography sx={{ mt: 4, mb: 3 }} variant="h6" component="div" fontWeight={600}>
             Servicii de polish
           </Typography>
           <List >
             {polishServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id}>
                 <ListItemText
                   primary={service.service_name}
                 />
@@ -196,13 +196,13 @@ export default function HomePageClient() {
         <TabContext value={value}>
           <Box sx={{my: 4 }}>
         <Tabs value={value} onChange={handleChange} >
-        <Tab value="1" label="Small" />
-        <Tab value="2" label="Medium" />
-        <Tab value="3" label="Large" />
+        <Tab value="1" label="Autoturisme" />
+        <Tab value="2" label="Clasa Lux" />
+        <Tab value="3" label="Clasa SUV" />
       </Tabs>
         <TabPanel value="1" ><List >
             {polishServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id + service.service_price_1}>
                 <ListItemText
                   primary={service.service_price_1}
                 />
@@ -211,7 +211,7 @@ export default function HomePageClient() {
             </List> </TabPanel>
             <TabPanel value="2" ><List >
             {polishServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id + service.service_price_2 * 2}>
                 <ListItemText
                   primary={service.service_price_2}
                 />
@@ -220,13 +220,14 @@ export default function HomePageClient() {
             </List> </TabPanel>
             <TabPanel value="3" ><List >
             {polishServices.map((service: any) => (
-                <ListItem>
+                <ListItem key={service.service_id + service.service_price_3 * 3}>
                 <ListItemText
                   primary={service.service_price_3}
                 />
                 </ListItem>
             ))}
             </List> </TabPanel>
+            <Typography align="right" color="text.secondary" > *Preturile sunt afisate in lei</Typography>
         </Box>
       </TabContext>
       </Grid>

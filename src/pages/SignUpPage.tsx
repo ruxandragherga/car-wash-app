@@ -8,8 +8,10 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
+  const navigate = useNavigate();
   async function handleSubmit (event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -28,12 +30,14 @@ export default function SignUp() {
       userRole: "client",
     }
 
+    navigate("/");
+    
     const postResponseData = await axios.post(
       "http://localhost:3002/api/create",
       newUser
     );
     const response = await postResponseData.data;
-    
+  
   };
 
   return (

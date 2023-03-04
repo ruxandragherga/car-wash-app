@@ -1,46 +1,46 @@
-# Getting Started with Create React App
+Proiect: Programare online la spalatorie auto
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Descriere: 
+Pentru a oferi o solutie problemei cozilor intalnite frecvent la spalatoriile auto, aplicatia ofera clientilor posibilitatea de a se programa online in doar cateva minute, dar si administratorului spalatoriei posibilitatea de a-si optimiza modul de gestionare al programarilor.
 
-## Available Scripts
+Autentificare (client/administrator) – utilizatorul se va loga pe baza unui username si a unei parole; in momentul crearii unui cont utilizatorul va fi nevoit sa introduca si alte informatii aditionale (nume, prenume, numar de telefon)
 
-In the project directory, you can run:
+Administrator: Pagina principala – aici administratorul poate adauga sau sterge servicii de spalatorie sau polish si preturile aferente; contine butonul catre pagina cu programarile viitoare si butonul catre istoricul programarilor la spalatorie 
 
-### `npm start`
+                Pagina cu programarile viitoare – lista programarilor viitoare ordonate dupa data, fiecare cu detaliile despre client (prenume, nume, nr. telefon), serviciile selectate, suma totala  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+                Pagina cu istoricul clientilor – lista programarilor care au fost deja onorate, fiecare cu detaliile despre client (prenume, nume, nr. telefon), serviciile selectate,  suma totala 
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+ 
 
-### `npm test`
+Client: Pagina pricipala – aici clientul poate vedea serviciile oferite de spalatorie si preturile pe categorii, butonul catre pagina “Programare”, butonul catre pagina “Programarile mele” 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+        Pagina in care isi creeaza o programare – clientul selecteaza serviciile dorite in functie de categoria autoturismului detinut, data si ora programarii, numarul de inmatriculare al masinii 
 
-### `npm run build`
+        Pagina cu istoricul programarilor – contine lista cu toate programarile clientului, fiecare cu serviciile selectate, preturile si suma totala 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+ 
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Limbaje de programare folosite pentru UI: 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+                        TypeScript – framework de React 
 
-### `npm run eject`
+Librarii React folosite pentru UI: 
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+                        MUI – interfata 
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+                        React-router-dom – navigatie ecrane 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Limbaje de programare & software folosite pentru backend: 
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+                        PHP MySql 
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Tabele baze de date:  
+
+        Persoane (id, nume, prenume, email, parola, nr. telefon, client/administrator) 
+
+        Servicii (id, categorie, denumire, pret categoria 1, pret categoria 2, pret categoria 3) 
+
+        Programari (id, id user, servicii solicitate, data si ora, numarul de inmatriculare al masinii, prenume client, nume client, nr. telefon client)

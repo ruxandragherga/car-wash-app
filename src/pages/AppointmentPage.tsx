@@ -25,12 +25,9 @@ import { Service } from "../models/Service";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const steps = [
-  "Selectati serviciile dorite",
-  "Alegeti data si ora",
-  "Introduceti numarul de inmatriculare",
-];
+import { useUserContext } from "../contexts/UserContext";
+import { Collapse, Alert, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const isWeekend = (date: Dayjs) => {
   const day = date.day();
@@ -39,8 +36,15 @@ const isWeekend = (date: Dayjs) => {
 };
 
 export default function AppointmentPage() {
+  const [userState, setUserState] = useUserContext();
   const [washingServices, setWashingServices] = useState<Service[]>([]);
   const [polishServices, setPolishServices] = useState<Service[]>([]);
+  const appointmentServices: {
+    serviceName: string;
+    servicePrice: number;
+  }[] = [];
+  const [isDateTimePickerErrorActive, setIsDateTimePickerErrorActive] =
+    useState(true);
 
   React.useEffect(() => {
     async function getWashingServiceItems() {
@@ -81,31 +85,78 @@ export default function AppointmentPage() {
     navigate("/home-page");
   };
 
-  const [activeStep, setActiveStep] = React.useState(0);
-
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const [value, setValue] = React.useState("1");
-
+  const [valueTab, setValueTab] = React.useState("1");
   const handleChangeTab = (event: React.SyntheticEvent, newValue: string) => {
-    setValue(newValue);
+    setValueTab(newValue);
   };
 
-  const [valueD, setValueD] = React.useState<Dayjs | null>(
+  const [valueDate, setValueDate] = React.useState<Dayjs | null>(
     dayjs().minute(0)
   );
 
-  const [checked, setChecked] = React.useState(false);
-
-  const handleChangeSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
+  const [checked, setChecked] = useState<any[]>([]);
+  const handleChangeSwitch = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    service: Service
+  ) => {
+    if (!checked.includes(service)) setChecked([...checked, service]);
+    else setChecked(checked.filter((c) => service !== c));
   };
+
+  const [appointmentTotal, setAppointmentTotal] = useState<number>(0);
+  const [isErrorMessageAlertActive, setIsErrorMessageAlertActive] =
+    useState(false);
+  const [isSuccessMessageAlertActive, setIsSuccessMessageAlertActive] =
+    useState(false);
+
+  async function handleMakeAppointment(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+
+    const res = await axios.get("http://localhost:3004/api/get");
+    const { data } = await res;
+    const totalNumberOfAppointments = data.length;
+
+    if (!isDateTimePickerErrorActive && checked.length > 0) {
+      checked.map((service) => {
+        appointmentServices[appointmentServices.length] = {
+          serviceName: service.service_name,
+          servicePrice:
+            valueTab === "1"
+              ? service.service_price_1
+              : valueTab === "2"
+              ? service.service_price_2
+              : service.service_price_1,
+        };
+      });
+
+      const newAppointment = {
+        appointmentId: totalNumberOfAppointments,
+        appointmentUserId: userState.id,
+        appointmentServices: JSON.stringify({
+          items: appointmentServices,
+        }),
+        appointmentDateAndTime: valueDate?.format("LLL"),
+        appointmentCarNumber: formData.get("carNumber"),
+        appointmentUserFirstName: userState.firstName,
+        appointmentUserLastName: userState.lastName,
+        appointmentUserPhoneNumber: userState.phoneNumber,
+      };
+
+      axios.post("http://localhost:3004/api/create", newAppointment);
+
+      if (isErrorMessageAlertActive) setIsErrorMessageAlertActive(false);
+      if (!isSuccessMessageAlertActive) {
+        setIsSuccessMessageAlertActive(true);
+      }
+    } else {
+      if (isSuccessMessageAlertActive) setIsSuccessMessageAlertActive(false);
+      if (!isErrorMessageAlertActive) setIsErrorMessageAlertActive(true);
+    }
+  }
 
   return (
     <Grid container component="main" sx={{ justifyContent: "center" }}>
@@ -147,232 +198,276 @@ export default function AppointmentPage() {
             </Typography>
           </Container>
         </Box>
-        <Grid container justifyContent="center" alignItems="center">
-          <TabContext value={value}>
-            <Box sx={{ width: 600 }}>
-              <Tabs
-                value={value}
-                sx={{ mt: 4, ml: 20 }}
-                onChange={handleChangeTab}
-              >
-                <Tab value="1" label="Small" />
-                <Tab value="2" label="Medium" />
-                <Tab value="3" label="Large" />
-              </Tabs>
-              <TabPanel value="1">
-                <Grid container spacing={8}>
-                  <Grid item xs={6}>
-                  <Typography
-                    sx={{ mt: 4, mb: 2 }}
-                    variant="h6"
-                    component="div"
-                    fontWeight={600}
-                  >
-                    Servicii spalatorie auto
-                  </Typography>
-                  <List>
-                    {washingServices.map((service: any) => (
-                      <ListItem
-                        secondaryAction={
-                          <Switch
-                            checked={checked}
-                            onChange={handleChangeSwitch}
-                            inputProps={{ "aria-label": "controlled" }}
-                          />
-                        }
+        <Box component="form" onSubmit={(e) => handleMakeAppointment(e)}>
+          <Grid container justifyContent="center" alignItems="center">
+            <TabContext value={valueTab}>
+              <Box sx={{ width: 800 }}>
+                <Tabs
+                  value={valueTab}
+                  sx={{ mt: 4, mx: 28}}
+                  onChange={handleChangeTab}
+                >
+                  <Tab value="1" label="Autoturisme" />
+                  <Tab value="2" label="Clasa Lux" />
+                  <Tab value="3" label="Clasa SUV" />
+                </Tabs>
+                <TabPanel value="1">
+                  <Grid container spacing={8}>
+                    <Grid item xs={6}>
+                      <Typography
+                        sx={{ mt: 4, mb: 2 }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={600}
                       >
-                        <ListItemText
-                          primary={service.service_name}
-                          secondary={service.service_price_1}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                  </Grid>
-                  <Grid item xs={6}>
-                  <Typography
-                    sx={{ mt: 4, mb: 2 }}
-                    variant="h6"
-                    component="div"
-                    fontWeight={600}
-                  >
-                    Servicii polish auto
-                  </Typography>
-                  <List>
-                    {polishServices.map((service: any) => (
-                      <ListItem
-                        secondaryAction={
-                          <Switch
-                            checked={checked}
-                            onChange={handleChangeSwitch}
-                            inputProps={{ "aria-label": "controlled" }}
-                          />
-                        }
+                        Servicii spalatorie auto
+                      </Typography>
+                      <List>
+                        {washingServices.map((service: any) => (
+                          <ListItem
+                            secondaryAction={
+                              <Switch
+                                //checked={checked}
+                                onChange={(e) => handleChangeSwitch(e, service)}
+                                inputProps={{ "aria-label": "controlled" }}
+                              />
+                            }
+                          >
+                            <ListItemText
+                              primary={service.service_name}
+                              secondary={service.service_price_1}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography
+                        sx={{ mt: 4, mb: 2 }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={600}
                       >
-                        <ListItemText
-                          primary={service.service_name}
-                          secondary={service.service_price_1}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                        Servicii polish auto
+                      </Typography>
+                      <List>
+                        {polishServices.map((service: any) => (
+                          <ListItem
+                            secondaryAction={
+                              <Switch
+                                key={service.service_id}
+                                //checked={checked}
+                                onChange={(e) => handleChangeSwitch(e, service)}
+                                inputProps={{ "aria-label": "controlled" }}
+                              />
+                            }
+                          >
+                            <ListItemText
+                              primary={service.service_name}
+                              secondary={service.service_price_1}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </TabPanel>
-              <TabPanel value="2">
-                <Grid container spacing={8}>
-                  <Grid item xs={6}>
-                  <Typography
-                    sx={{ mt: 4, mb: 2 }}
-                    variant="h6"
-                    component="div"
-                    fontWeight={600}
-                  >
-                    Servicii spalatorie auto
-                  </Typography>
-                  <List>
-                    {washingServices.map((service: any) => (
-                      <ListItem
-                        secondaryAction={
-                          <Switch
-                            checked={checked}
-                            onChange={handleChangeSwitch}
-                            inputProps={{ "aria-label": "controlled" }}
-                          />
-                        }
+                </TabPanel>
+                <TabPanel value="2">
+                  <Grid container spacing={8}>
+                    <Grid item xs={6}>
+                      <Typography
+                        sx={{ mt: 4, mb: 2 }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={600}
                       >
-                        <ListItemText
-                          primary={service.service_name}
-                          secondary={service.service_price_2}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                  </Grid>
-                  <Grid item xs={6}>
-                  <Typography
-                    sx={{ mt: 4, mb: 2 }}
-                    variant="h6"
-                    component="div"
-                    fontWeight={600}
-                  >
-                    Servicii polish auto
-                  </Typography>
-                  <List>
-                    {polishServices.map((service: any) => (
-                      <ListItem
-                        secondaryAction={
-                          <Switch
-                            checked={checked}
-                            onChange={handleChangeSwitch}
-                            inputProps={{ "aria-label": "controlled" }}
-                          />
-                        }
+                        Servicii spalatorie auto
+                      </Typography>
+                      <List>
+                        {washingServices.map((service: any) => (
+                          <ListItem
+                            secondaryAction={
+                              <Switch
+                                key={service.service_id}
+                                //checked={checked}
+                                onChange={(e) => handleChangeSwitch(e, service)}
+                                inputProps={{ "aria-label": "controlled" }}
+                              />
+                            }
+                          >
+                            <ListItemText
+                              primary={service.service_name}
+                              secondary={service.service_price_2}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography
+                        sx={{ mt: 4, mb: 2 }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={600}
                       >
-                        <ListItemText
-                          primary={service.service_name}
-                          secondary={service.service_price_2}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                        Servicii polish auto
+                      </Typography>
+                      <List>
+                        {polishServices.map((service: any) => (
+                          <ListItem
+                            secondaryAction={
+                              <Switch
+                                key={service.service_id}
+                                //checked={checked}
+                                onChange={(e) => handleChangeSwitch(e, service)}
+                                inputProps={{ "aria-label": "controlled" }}
+                              />
+                            }
+                          >
+                            <ListItemText
+                              primary={service.service_name}
+                              secondary={service.service_price_2}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </TabPanel>
-              <TabPanel value="3">
-                <Grid container spacing={8}>
-                  <Grid item xs={6}>
-                  <Typography
-                    sx={{ mt: 4, mb: 2 }}
-                    variant="h6"
-                    component="div"
-                    fontWeight={600}
-                  >
-                    Servicii spalatorie auto
-                  </Typography>
-                  <List>
-                    {washingServices.map((service: any) => (
-                      <ListItem
-                        secondaryAction={
-                          <Switch
-                            checked={checked}
-                            onChange={handleChangeSwitch}
-                            inputProps={{ "aria-label": "controlled" }}
-                          />
-                        }
+                </TabPanel>
+                <TabPanel value="3">
+                  <Grid container spacing={8}>
+                    <Grid item xs={6}>
+                      <Typography
+                        sx={{ mt: 4, mb: 2 }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={600}
                       >
-                        <ListItemText
-                          primary={service.service_name}
-                          secondary={service.service_price_3}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                  </Grid>
-                  <Grid item xs={6}>
-                  <Typography
-                    sx={{ mt: 4, mb: 2 }}
-                    variant="h6"
-                    component="div"
-                    fontWeight={600}
-                  >
-                    Servicii polish auto
-                  </Typography>
-                  <List>
-                    {polishServices.map((service: any) => (
-                      <ListItem
-                        secondaryAction={
-                          <Switch
-                            checked={checked}
-                            onChange={handleChangeSwitch}
-                            inputProps={{ "aria-label": "controlled" }}
-                          />
-                        }
+                        Servicii spalatorie auto
+                      </Typography>
+                      <List>
+                        {washingServices.map((service: any) => (
+                          <ListItem
+                            secondaryAction={
+                              <Switch
+                                key={service.service_id}
+                                //checked={checked}
+                                onChange={(e) => handleChangeSwitch(e, service)}
+                                inputProps={{ "aria-label": "controlled" }}
+                              />
+                            }
+                          >
+                            <ListItemText
+                              primary={service.service_name}
+                              secondary={service.service_price_3}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography
+                        sx={{ mt: 4, mb: 2 }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={600}
                       >
-                        <ListItemText
-                          primary={service.service_name}
-                          secondary={service.service_price_3}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                        Servicii polish auto
+                      </Typography>
+                      <List>
+                        {polishServices.map((service: any) => (
+                          <ListItem
+                            secondaryAction={
+                              <Switch
+                                key={service.service_id}
+                                //checked={checked}
+                                onChange={(e) => handleChangeSwitch(e, service)}
+                                inputProps={{ "aria-label": "controlled" }}
+                              />
+                            }
+                          >
+                            <ListItemText
+                              primary={service.service_name}
+                              secondary={service.service_price_3}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </TabPanel>
-            </Box>
-          </TabContext>
-        </Grid>
-        <Grid sx={{ mx: 64 }} justifyContent="center">
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              renderInput={(props) => <TextField {...props} />}
-              label="DateTimePicker"
-              value={valueD}
-              shouldDisableDate={isWeekend}
-              disablePast
-              views={["day", "hours"]}
-              minTime={dayjs("2022-02-14T08:00")}
-              maxTime={dayjs("2022-02-14T18:00")}
-              onChange={(newValueD) => {
-                setValueD(newValueD);
-              }}
+                </TabPanel>
+              </Box>
+            </TabContext>
+          </Grid>
+          <Grid sx={{ mx: 64 }} justifyContent="center">
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                renderInput={(props) => <TextField {...props} />}
+                label="DateTimePicker"
+                value={valueDate}
+                shouldDisableDate={isWeekend}
+                disablePast
+                views={["day", "hours"]}
+                minTime={dayjs()}
+                maxTime={dayjs("2022-02-14T18:00")}
+                onChange={(newValueDate) => {
+                  setValueDate(newValueDate);
+                }}
+                onError={(r, v) => {
+                  if (r === null) {
+                    setIsDateTimePickerErrorActive(false);
+                  } else {
+                    setIsDateTimePickerErrorActive(true);
+                  }
+                }}
+              />
+            </LocalizationProvider>
+            <TextField
+              sx={{ my: 6 }}
+              margin="normal"
+              required
+              fullWidth
+              id="carNumber"
+              label="Numar de inmatriculare"
+              name="carNumber"
+              autoComplete="carNumber"
+              autoFocus
             />
-          </LocalizationProvider>
-          <TextField
-            sx={{ my: 6 }}
-            margin="normal"
-            required
-            fullWidth
-            id="inmatriculare"
-            label="Numar de inmatriculare"
-            name="Numar de inmatriculare"
-            autoComplete="numar de inmatriculare"
-            autoFocus
-          />
-          <Button sx={{ mb: 10 }} type="submit" fullWidth variant="contained">
-            Finalizare
-          </Button>
-        </Grid>
+          </Grid>
+          <Grid sx={{ mx: 40 }} justifyContent="center" alignItems="center">
+            <Button sx={{ mb: 4 }} fullWidth variant="contained" type="submit">
+              Finalizare
+            </Button>
+            <Box sx={{ width: "100%", mb: 4 }}>
+              <Collapse
+                in={isErrorMessageAlertActive || isSuccessMessageAlertActive}
+              >
+                <Alert
+                  severity={isErrorMessageAlertActive ? "error" : "success"}
+                  action={
+                    <IconButton
+                      aria-label="close"
+                      color="inherit"
+                      size="small"
+                      onClick={() => {
+                        if (isErrorMessageAlertActive)
+                          setIsErrorMessageAlertActive(false);
+                        if (isSuccessMessageAlertActive)
+                          setIsSuccessMessageAlertActive(false);
+                      }}
+                    >
+                      <CloseIcon fontSize="inherit" />
+                    </IconButton>
+                  }
+                >
+                  {isErrorMessageAlertActive
+                    ? "Data selectata trebuie sa fie valida si minim un serviciu trebuie selectat."
+                    : "Programarea a fost efectuata cu succes."}
+                </Alert>
+              </Collapse>
+            </Box>
+          </Grid>
+        </Box>
       </main>
     </Grid>
   );

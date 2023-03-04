@@ -28,6 +28,17 @@ services_app.get("/api/getFromId/:id", (req, res) => {
   });
 });
 
+// Route to get one service
+services_app.get("/api/getFromName/:name", (req, res) => {
+  const name = req.params.name;
+  services_db.query("SELECT * FROM services WHERE service_name= ?", name, (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+
 // Route for creating the service
 services_app.post("/api/create", (req, res) => {
   const serviceId = req.body.serviceId;
@@ -68,7 +79,10 @@ services_app.post("/api/create", (req, res) => {
  services_db.query("DELETE FROM services WHERE service_id= ?", id, (err,result)=>{
  if(err) {
  console.log(err)
-         } }) })
+ res.send({error: err.message});
+         }
+        res.send(result);
+      }) })
 
 services_app.listen(services_USERSPORT, () => {
   console.log(`Server is running on ${services_USERSPORT}`);

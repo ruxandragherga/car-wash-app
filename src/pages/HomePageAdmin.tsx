@@ -69,6 +69,15 @@ export default function HomePageAdmin() {
     getPolishServiceItems();
   }, [washingServices, polishServices]);
 
+  const service1InputRef = React.useRef<HTMLInputElement>(null);
+  const service2InputRef = React.useRef<HTMLInputElement>(null);
+  const price1_1InputRef = React.useRef<HTMLInputElement>(null);
+  const price1_2InputRef = React.useRef<HTMLInputElement>(null);
+  const price2_1InputRef = React.useRef<HTMLInputElement>(null);
+  const price2_2InputRef = React.useRef<HTMLInputElement>(null);
+  const price3_1InputRef = React.useRef<HTMLInputElement>(null);
+  const price3_2InputRef = React.useRef<HTMLInputElement>(null);
+
   async function handleAddService(
     event: React.FormEvent<HTMLFormElement>,
     category: string
@@ -101,7 +110,7 @@ export default function HomePageAdmin() {
       ),
     };
 
-    const postResponseData = await axios.post(
+    axios.post(
       "http://localhost:3003/api/create",
       newService
     );
@@ -136,31 +145,44 @@ export default function HomePageAdmin() {
       }
     }
     getPolishServiceItems();
+
+    if(service1InputRef.current) {
+      service1InputRef.current.value = "";
+    }
+    if(service2InputRef.current) {
+      service2InputRef.current.value = "";
+    }
+    if(price1_1InputRef.current) {
+      price1_1InputRef.current.value = "";
+    }
+    if(price1_2InputRef.current) {
+      price1_2InputRef.current.value = "";
+    }
+    if(price2_1InputRef.current) {
+      price2_1InputRef.current.value = "";
+    }
+    if(price3_1InputRef.current) {
+      price3_1InputRef.current.value = "";
+    }
+    if(price3_2InputRef.current) {
+      price3_2InputRef.current.value = "";
+    }
+    if(price2_2InputRef.current) {
+      price2_2InputRef.current.value = "";
+    }
   }
 
-  const { findService } = useService();
-  const [serviceDeleteId, setServiceDeleteId] = useState();
   async function handleDeleteService(
     event: React.MouseEvent<HTMLElement>,
-    serviceName: string
+    serviceId: number
   ) {
     event.preventDefault();
-    findService({
-      serviceName,
-    })
-      .then((serviceResult) => {
-        if (serviceResult !== undefined) {
-          setServiceDeleteId(serviceResult.service_id);
-        }
-      })
-      .catch((err:any) => console.log(err));
-      
-        console.log(serviceDeleteId);
-        console.log(serviceName);
         const postResponseData = await axios.delete(
-          "http://localhost:3003/api/delete/" + serviceDeleteId 
+          "http://localhost:3003/api/delete/" + serviceId 
         );
         
+          console.log(postResponseData.data);
+
         async function getWashingServiceItems() {
           try {
             const res = await axios.get("http://localhost:3003/api/get");
@@ -211,7 +233,7 @@ export default function HomePageAdmin() {
       </AppBar>
       <main>
         <Stack
-          sx={{ py: 4 }}
+          sx={{ py: 6 }}
           direction="row"
           spacing={2}
           justifyContent="center"
@@ -229,6 +251,7 @@ export default function HomePageAdmin() {
           justifyContent="center"
           alignItems="flex-start"
           direction="column"
+          sx={{mb: 10}}
         >
           <Typography
             sx={{ mt: 4, mb: 2 }}
@@ -255,36 +278,40 @@ export default function HomePageAdmin() {
                 id="service_1"
                 label="Denumire Serviciu"
                 name="service_1"
+                inputRef={service1InputRef}
               />
               <TextField
                 sx={{ width: 1 / 8, mx: 2 }}
                 margin="normal"
                 required
                 id="price1_1"
-                label="Pret Small"
+                label="Pret Auto"
                 name="price1_1"
                 type="number"
                 variant="standard"
+                inputRef={price1_1InputRef}
               />
               <TextField
                 sx={{ width: 1 / 8, mx: 2 }}
                 margin="normal"
                 required
                 id="price2_1"
-                label="Pret Medium"
+                label="Pret Lux"
                 name="price2_1"
                 type="number"
                 variant="standard"
+                inputRef={price2_1InputRef}
               />
               <TextField
                 sx={{ width: 1 / 8, mx: 2 }}
                 margin="normal"
                 required
                 id="price3_1"
-                label="Pret Large"
+                label="Pret SUV"
                 name="price3_1"
                 type="number"
                 variant="standard"
+                inputRef={price3_1InputRef}
               />
               <Button variant="contained" type="submit" sx={{ my: 4 }}>
                 Adauga
@@ -295,7 +322,7 @@ export default function HomePageAdmin() {
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableBody>
                 {washingServices.map((service: any) => (
-                  <TableRow key={service.service_name}>
+                  <TableRow key={service.service_id}>
                     <TableCell component="th" scope="row">
                       {service.service_name}
                     </TableCell>
@@ -312,7 +339,7 @@ export default function HomePageAdmin() {
                       {" "}
                       <Button
                         onClick={(e) =>
-                          handleDeleteService(e, service.service_name)
+                          handleDeleteService(e, service.service_id)
                         }
                       >
                         {" "}
@@ -346,36 +373,40 @@ export default function HomePageAdmin() {
                 id="service_2"
                 label="Denumire Serviciu"
                 name="service_2"
+                inputRef={service2InputRef}
               />
               <TextField
                 sx={{ width: 1 / 8, mx: 2 }}
                 margin="normal"
                 required
                 id="price1_2"
-                label="Pret Small"
+                label="Pret Auto"
                 name="price1_2"
                 type="number"
                 variant="standard"
+                inputRef={price1_2InputRef}
               />
               <TextField
                 sx={{ width: 1 / 8, mx: 2 }}
                 margin="normal"
                 required
                 id="price2_2"
-                label="Pret Medium"
+                label="Pret Lux"
                 name="price2_2"
                 type="number"
                 variant="standard"
+                inputRef={price2_2InputRef}
               />
               <TextField
                 sx={{ width: 1 / 8, mx: 2 }}
                 margin="normal"
                 required
                 id="price3_2"
-                label="Pret Large"
+                label="Pret SUV"
                 name="price3_2"
                 type="number"
                 variant="standard"
+                inputRef={price3_2InputRef}
               />
               <Button variant="contained" type="submit" sx={{ my: 4 }}>
                 Adauga
@@ -386,7 +417,7 @@ export default function HomePageAdmin() {
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableBody>
                 {polishServices.map((service: any) => (
-                  <TableRow key={service.service_name}>
+                  <TableRow key={service.service_id}>
                     <TableCell component="th" scope="row">
                       {service.service_name}
                     </TableCell>
@@ -403,7 +434,7 @@ export default function HomePageAdmin() {
                       {" "}
                       <Button
                         onClick={(e) =>
-                          handleDeleteService(e, service.service_name)
+                          handleDeleteService(e, service.service_id)
                         }
                       >
                         {" "}

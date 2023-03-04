@@ -1,27 +1,35 @@
 import { createContext, FC, ReactNode, useContext, useState } from "react";
-import internal from "stream";
-import { JsonSourceFile } from "typescript";
-import { Service } from "../models/Service";
 
 export const AppointmentContext = createContext<
   ReturnType<typeof useAppointmentContextValue>
 >(null!);
 
 type AppointmentContextValue = {
-  id: number;
-  idUser: number;
-  //services: JSON;
-  dateAndTime: Date;
-  carNumber: string;
+  appointmentId: number;
+  appointmemtIdUser: number;
+  appointmentServices: {
+    serviceName: string;
+    servicePrice: number;
+  }[];
+  appointmentDateAndTime: string;
+  appointmentCarNumber: string;
+  appointmentTotal: number;
+  appointmentUserFirstName: string;
+  appointmentUserLastName: string;
+  appointmentUserPhoneNumber: string;
 };
 
 function useAppointmentContextValue() {
   const [appointmentState, setAppointmentState] = useState<AppointmentContextValue>({
-    id: -1,
-    idUser: -1,
-    //services: ;
-    dateAndTime: newDate(''),
-    carNumber: "",
+    appointmentId: -1,
+    appointmemtIdUser: -1,
+    appointmentServices: [],
+    appointmentDateAndTime: "",
+    appointmentCarNumber: "",
+    appointmentTotal: 0,
+    appointmentUserFirstName: "",
+    appointmentUserLastName: "",
+    appointmentUserPhoneNumber: "",
   });
 
   return [appointmentState, setAppointmentState] as const;
@@ -42,6 +50,3 @@ export function useAppointmentContext() {
   return useContext(AppointmentContext);
 }
 
-function newDate(arg0: string): Date {
-    throw new Error("Function not implemented.");
-}
